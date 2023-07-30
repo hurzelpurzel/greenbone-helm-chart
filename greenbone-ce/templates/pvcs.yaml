@@ -1,0 +1,175 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: cert-data-vol
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: cert-data-vol
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: data-objects-vol
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: data-objects-vol
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: gpg-data-vol
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: gpg-data-vol
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    io.kompose.service: gvmd-data-vol
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: gvmd-data-vol
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: gvmd-socket-vol
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: gvmd-socket-vol
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: notus-data-vol
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: notus-data-vol
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: ospd-openvas-socket-vol
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: ospd-openvas-socket-vol
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: psql-data-vol
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: psql-data-vol
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    io.kompose.service: psql-socket-vol
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: psql-socket-vol
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: redis-socket-vol
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: redis-socket-vol
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: scap-data-vol
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: scap-data-vol
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: vt-data-vol
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: vt-data-vol
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi

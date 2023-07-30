@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: openvas
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openvas
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: openvas
+    spec:
+      initContainers:
+        - env:
+            - name: STORAGE_PATH
+              value: /var/lib/openvas/22.04/vt-data/nasl
+          image: greenbone/vulnerability-tests
+          name: vulnerability-tests
+          resources: {}
+          volumeMounts:
+            - mountPath: /mnt
+              name: vt-data-vol
+        - image: greenbone/gpg-data
+          name: gpg-data
+          resources: {}
+          volumeMounts:
+            - mountPath: /mnt
+              name: gpg-data-vol
+      restartPolicy: Always
+      containers:
+      - image: greenbone/redis-server
+        name: redis-server
+        resources: {}
+        volumeMounts:
+          - mountPath: /run/redis
+            name: redis-socket-vol
+      - image: greenbone/ospd-openvas:stable
+        name: ospd-openvas
+        args:
+          - ospd-openvas
+          - -f
+          - --config
+          - /etc/gvm/ospd-openvas.conf
+          - --mqtt-broker-address
+          - mqtt-broker
+          - --notus-feed-dir
+          - /var/lib/notus/advisories
+          - -m
+          - "666"
+        resources: {}
+        securityContext:
+          capabilities:
+            add:
+              - NET_ADMIN
+              - NET_RAW
+        volumeMounts:
+          - mountPath: /etc/openvas/gnupg
+            name: gpg-data-vol
+          - mountPath: /var/lib/openvas/plugins
+            name: vt-data-vol
+          - mountPath: /var/lib/notus
+            name: notus-data-vol
+          - mountPath: /run/ospd
+            name: ospd-openvas-socket-vol
+          - mountPath: /run/redis
+            name: redis-socket-vol
+
+      volumes:
+        - name: gpg-data-vol
+          persistentVolumeClaim:
+            claimName: gpg-data-vol
+        - name: vt-data-vol
+          persistentVolumeClaim:
+            claimName: vt-data-vol
+        - name: notus-data-vol
+          persistentVolumeClaim:
+            claimName: notus-data-vol
+        - name: ospd-openvas-socket-vol
+          persistentVolumeClaim:
+            claimName: ospd-openvas-socket-vol
+        - name: redis-socket-vol
+          persistentVolumeClaim:
+            claimName: redis-socket-vol

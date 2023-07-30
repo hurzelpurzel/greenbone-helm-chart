@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: notus-scanner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notus-scanner
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: notus-scanner
+    spec:
+      initContainers:
+        - image: greenbone/notus-data
+          name: notus-data
+          resources: {}
+          volumeMounts:
+            - mountPath: /mnt
+              name: notus-data-
+      containers:
+        - env:
+            - name: NOTUS_SCANNER_MQTT_BROKER_ADDRESS
+              value: mqtt-broker
+            - name: NOTUS_SCANNER_PRODUCTS_DIRECTORY
+              value: /var/lib/notus/products
+          image: greenbone/notus-scanner:stable
+          name: notus-scanner
+          resources: {}
+          volumeMounts:
+            - mountPath: /var/lib/notus
+              name: notus-data-vol
+            - mountPath: /etc/openvas/gnupg
+              name: gpg-data-vol
+      restartPolicy: Always
+      volumes:
+        - name: notus-data-vol
+          persistentVolumeClaim:
+            claimName: notus-data-vol
+        - name: gpg-data-vol
+          persistentVolumeClaim:
+            claimName: gpg-data-vol

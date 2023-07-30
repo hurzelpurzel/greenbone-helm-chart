@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: gmvd
+spec:
+  selector:
+    matchLabels:
+      app: gvmd
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+       labels:
+         app: gvmd
+       {{- include "greenbone-ce.labels" . | nindent 10 }}
+    spec:
+        initContainers:
+          - image: greenbone/scap-data
+            name: scap-data
+            resources: {}
+            volumeMounts:
+                - mountPath: /mnt
+                name: scap-data-vol
+          - image: greenbone/cert-bund-data
+            name: cert-bund-data
+            resources: {}
+            volumeMounts:
+                - mountPath: /mnt
+                name: cert-data-vol
+          - image: greenbone/dfn-cert-data
+            name: dfn-cert-data
+            resources: {}
+            volumeMounts:
+                - mountPath: /mnt
+                name: cert-data-vol
+          - image: greenbone/data-objects
+            name: data-objects
+            resources: {}
+            volumeMounts:
+                - mountPath: /mnt
+                name: data-objects-vol
+          - image: greenbone/report-formats
+            name: report-formats
+            resources: {}
+            volumeMounts:
+                - mountPath: /mnt
+                name: data-objects-vol
+        containers:
+          - image: greenbone/gsa:stable
+            name: gsa
+            ports:
+              - containerPort: 80
+                hostPort: 9392
+                protocol: TCP
+            resources: {}
+            volumeMounts:
+              - mountPath: /run/gvmd
+                name: gvmd-socket-vol
+          - image: greenbone/pg-gvm:stable
+            name: pg-gvm
+            resources: {}
+            volumeMounts:
+              - mountPath: /va/lib/postgresql
+                name: psql-data-vol
+              - mountPath: /var/run/postgresql
+                name: psql-socket-vol
+          - image: greenbone/gvmd:stable
+            name: gvmd
+            resources: {}
+            volumeMounts:
+              - mountPath: /var/lib/gvm
+                name: gvmd-data-vol
+              - mountPath: /var/lib/gvm/scap-data
+                name: scap-data-vol
+              - mountPath: /var/lib/gvm/cert-data
+                name: cert-data-vol
+              - mountPath: /var/lib/gvm/data-objects/gvmd
+                name: data-objects-vol
+              - mountPath: /var/lib/openvas/plugins
+                name: vt-data-vol
+              - mountPath: /var/lib/postgresql
+                name: psql-data-vol
+              - mountPath: /run/gvmd
+                name: gvmd-socket-vol
+              - mountPath: /run/ospd
+                name: ospd-openvas-socket-vol
+              - mountPath: /var/run/postgresql
+                name: psql-socket-vol
+        restartPolicy: OnFailure
+        volumes:
+          - name: gvmd-data-vol
+            persistentVolumeClaim:
+                claimName: gvmd-data-vol
+          - name: scap-data-vol
+            persistentVolumeClaim:
+                claimName: scap-data-vol
+          - name: cert-data-vol
+            persistentVolumeClaim:
+                claimName: cert-data-vol
+          - name: data-objects-vol
+            persistentVolumeClaim:
+                claimName: data-objects-vol
+          - name: vt-data-vol
+            persistentVolumeClaim:
+                claimName: vt-data-vol
+          - name: psql-data-vol
+            persistentVolumeClaim:
+                claimName: psql-data-vol
+          - name: gvmd-socket-vol
+            persistentVolumeClaim:
+                claimName: gvmd-socket-vol
+          - name: ospd-openvas-socket-vol
+            persistentVolumeClaim:
+                claimName: ospd-openvas-socket-vol
+          - name: psql-socket-vol
+            persistentVolumeClaim:
+                claimName: psql-socket-vol
