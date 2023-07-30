@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    io.kompose.service: gvmd-data-vol
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: gvmd-data-vol
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi

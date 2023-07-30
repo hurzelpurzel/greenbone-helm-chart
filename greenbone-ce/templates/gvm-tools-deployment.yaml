@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose-22.4.yml
+    kompose.version: 1.30.0 (9d8dcb518)
+  labels:
+    io.kompose.service: gvm-tools
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: gvm-tools
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: gvm-tools
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose-22.4.yml
+        kompose.version: 1.30.0 (9d8dcb518)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/greenbone-helm-chart-default: "true"
+        io.kompose.service: gvm-tools
+    spec:
+      containers:
+        - image: greenbone/gvm-tools
+          name: gvm-tools
+          resources: {}
+          volumeMounts:
+            - mountPath: /run/gvmd
+              name: gvmd-socket-vol
+            - mountPath: /run/ospd
+              name: ospd-openvas-socket-vol
+      restartPolicy: Always
+      volumes:
+        - name: gvmd-socket-vol
+          persistentVolumeClaim:
+            claimName: gvmd-socket-vol
+        - name: ospd-openvas-socket-vol
+          persistentVolumeClaim:
+            claimName: ospd-openvas-socket-vol
+

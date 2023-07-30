@@ -1,6 +1,6 @@
 # greenbone-helm-chart
 
-The OpenVAS and Greenbon Community Edition is a great tool for 
+The OpenVAS and Greenbone Community Edition is a great tool for 
 Vulnerabiltiy Assesment.
 
 

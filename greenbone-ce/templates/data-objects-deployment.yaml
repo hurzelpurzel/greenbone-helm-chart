@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose-22.4.yml
+    kompose.version: 1.30.0 (9d8dcb518)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: data-objects
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: data-objects
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: data-objects
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose-22.4.yml
+        kompose.version: 1.30.0 (9d8dcb518)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/greenbone-helm-chart-default: "true"
+        io.kompose.service: data-objects
+    spec:
+      containers:
+        - image: greenbone/data-objects
+          name: data-objects
+          resources: {}
+          volumeMounts:
+            - mountPath: /mnt
+              name: data-objects-vol
+      restartPolicy: Always
+      volumes:
+        - name: data-objects-vol
+          persistentVolumeClaim:
+            claimName: data-objects-vol

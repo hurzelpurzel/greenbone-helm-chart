@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose-22.4.yml
+    kompose.version: 1.30.0 (9d8dcb518)
+  labels:
+    io.kompose.network/greenbone-helm-chart-default: "true"
+    io.kompose.service: gvmd
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: gvmd
+spec:
+  containers:
+    - image: greenbone/gvmd:stable
+      name: gvmd
+      resources: {}
+      volumeMounts:
+        - mountPath: /var/lib/gvm
+          name: gvmd-data-vol
+        - mountPath: /var/lib/gvm/scap-data
+          name: scap-data-vol
+        - mountPath: /var/lib/gvm/cert-data
+          name: cert-data-vol
+        - mountPath: /var/lib/gvm/data-objects/gvmd
+          name: data-objects-vol
+        - mountPath: /var/lib/openvas/plugins
+          name: vt-data-vol
+        - mountPath: /var/lib/postgresql
+          name: psql-data-vol
+        - mountPath: /run/gvmd
+          name: gvmd-socket-vol
+        - mountPath: /run/ospd
+          name: ospd-openvas-socket-vol
+        - mountPath: /var/run/postgresql
+          name: psql-socket-vol
+  restartPolicy: OnFailure
+  volumes:
+    - name: gvmd-data-vol
+      persistentVolumeClaim:
+        claimName: gvmd-data-vol
+    - name: scap-data-vol
+      persistentVolumeClaim:
+        claimName: scap-data-vol
+    - name: cert-data-vol
+      persistentVolumeClaim:
+        claimName: cert-data-vol
+    - name: data-objects-vol
+      persistentVolumeClaim:
+        claimName: data-objects-vol
+    - name: vt-data-vol
+      persistentVolumeClaim:
+        claimName: vt-data-vol
+    - name: psql-data-vol
+      persistentVolumeClaim:
+        claimName: psql-data-vol
+    - name: gvmd-socket-vol
+      persistentVolumeClaim:
+        claimName: gvmd-socket-vol
+    - name: ospd-openvas-socket-vol
+      persistentVolumeClaim:
+        claimName: ospd-openvas-socket-vol
+    - name: psql-socket-vol
+      persistentVolumeClaim:
+        claimName: psql-socket-vol
+

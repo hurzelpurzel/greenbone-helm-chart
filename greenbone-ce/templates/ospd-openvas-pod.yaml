@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose-22.4.yml
+    kompose.version: 1.30.0 (9d8dcb518)
+  creationTimestamp: null
+  labels:
+    io.kompose.network/greenbone-helm-chart-default: "true"
+    io.kompose.service: ospd-openvas
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: ospd-openvas
+spec:
+  containers:
+    - args:
+        - ospd-openvas
+        - -f
+        - --config
+        - /etc/gvm/ospd-openvas.conf
+        - --mqtt-broker-address
+        - mqtt-broker
+        - --notus-feed-dir
+        - /var/lib/notus/advisories
+        - -m
+        - "666"
+      image: greenbone/ospd-openvas:stable
+      name: ospd-openvas
+      resources: {}
+      securityContext:
+        capabilities:
+          add:
+            - NET_ADMIN
+            - NET_RAW
+      volumeMounts:
+        - mountPath: /etc/openvas/gnupg
+          name: gpg-data-vol
+        - mountPath: /var/lib/openvas/plugins
+          name: vt-data-vol
+        - mountPath: /var/lib/notus
+          name: notus-data-vol
+        - mountPath: /run/ospd
+          name: ospd-openvas-socket-vol
+        - mountPath: /run/redis
+          name: redis-socket-vol
+  restartPolicy: OnFailure
+  volumes:
+    - name: gpg-data-vol
+      persistentVolumeClaim:
+        claimName: gpg-data-vol
+    - name: vt-data-vol
+      persistentVolumeClaim:
+        claimName: vt-data-vol
+    - name: notus-data-vol
+      persistentVolumeClaim:
+        claimName: notus-data-vol
+    - name: ospd-openvas-socket-vol
+      persistentVolumeClaim:
+        claimName: ospd-openvas-socket-vol
+    - name: redis-socket-vol
+      persistentVolumeClaim:
+        claimName: redis-socket-vol

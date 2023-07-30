@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose-22.4.yml
+    kompose.version: 1.30.0 (9d8dcb518)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: dfn-cert-data
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: dfn-cert-data
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: dfn-cert-data
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose-22.4.yml
+        kompose.version: 1.30.0 (9d8dcb518)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/greenbone-helm-chart-default: "true"
+        io.kompose.service: dfn-cert-data
+    spec:
+      containers:
+        - image: greenbone/dfn-cert-data
+          name: dfn-cert-data
+          resources: {}
+          volumeMounts:
+            - mountPath: /mnt
+              name: cert-data-vol
+      restartPolicy: Always
+      volumes:
+        - name: cert-data-vol
+          persistentVolumeClaim:
+            claimName: cert-data-vol
+

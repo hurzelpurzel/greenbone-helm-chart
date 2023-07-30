@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose-22.4.yml
+    kompose.version: 1.30.0 (9d8dcb518)
+  labels:
+    io.kompose.service: notus-data
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: notus-data
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: notus-data
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose-22.4.yml
+        kompose.version: 1.30.0 (9d8dcb518)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/greenbone-helm-chart-default: "true"
+        io.kompose.service: notus-data
+    spec:
+      containers:
+        - image: greenbone/notus-data
+          name: notus-data
+          resources: {}
+          volumeMounts:
+            - mountPath: /mnt
+              name: notus-data-vol
+      restartPolicy: Always
+      volumes:
+        - name: notus-data-vol
+          persistentVolumeClaim:
+            claimName: notus-data-vol

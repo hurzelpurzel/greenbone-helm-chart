@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose-22.4.yml
+    kompose.version: 1.30.0 (9d8dcb518)
+  labels:
+    io.kompose.service: scap-data
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: scap-data
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: scap-data
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose-22.4.yml
+        kompose.version: 1.30.0 (9d8dcb518)
+      labels:
+        io.kompose.network/greenbone-helm-chart-default: "true"
+        io.kompose.service: scap-data
+    spec:
+      containers:
+        - image: greenbone/scap-data
+          name: scap-data
+          resources: {}
+          volumeMounts:
+            - mountPath: /mnt
+              name: scap-data-vol
+      restartPolicy: Always
+      volumes:
+        - name: scap-data-vol
+          persistentVolumeClaim:
+            claimName: scap-data-vol

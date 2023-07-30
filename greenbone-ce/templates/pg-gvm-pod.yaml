@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose-22.4.yml
+    kompose.version: 1.30.0 (9d8dcb518)
+  labels:
+    io.kompose.network/greenbone-helm-chart-default: "true"
+    io.kompose.service: pg-gvm
+    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  name: pg-gvm
+spec:
+  containers:
+    - image: greenbone/pg-gvm:stable
+      name: pg-gvm
+      resources: {}
+      volumeMounts:
+        - mountPath: /var/lib/postgresql
+          name: psql-data-vol
+        - mountPath: /var/run/postgresql
+          name: psql-socket-vol
+  restartPolicy: OnFailure
+  volumes:
+    - name: psql-data-vol
+      persistentVolumeClaim:
+        claimName: psql-data-vol
+    - name: psql-socket-vol
+      persistentVolumeClaim:
+        claimName: psql-socket-vol
+
