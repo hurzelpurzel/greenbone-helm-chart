@@ -26,7 +26,7 @@ spec:
       containers:
         - env:
             - name: NOTUS_SCANNER_MQTT_BROKER_ADDRESS
-              value: mqtt-broker
+              value: mqtt-broker.{{.Release.Namespace}}.svc.cluster.local
             - name: NOTUS_SCANNER_PRODUCTS_DIRECTORY
               value: /var/lib/notus/products
           image: greenbone/notus-scanner:stable

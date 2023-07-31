@@ -1,8 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    {{- include "greenbone-ce.labels" . | nindent 4 }}
+  labels: 
+   {{- include "greenbone-ce.labels" . | nindent 4 }}
   name: openvas
 spec:
   replicas: 1
@@ -14,6 +14,7 @@ spec:
   template:
     metadata:
       labels:
+        io.kompose.service: ospd-openvas
         app: openvas
     spec:
       initContainers:
@@ -34,42 +35,42 @@ spec:
               name: gpg-data-vol
       restartPolicy: Always
       containers:
-      - image: greenbone/redis-server
-        name: redis-server
-        resources: {}
-        volumeMounts:
-          - mountPath: /run/redis
-            name: redis-socket-vol
-      - image: greenbone/ospd-openvas:stable
-        name: ospd-openvas
-        args:
-          - ospd-openvas
-          - -f
-          - --config
-          - /etc/gvm/ospd-openvas.conf
-          - --mqtt-broker-address
-          - mqtt-broker
-          - --notus-feed-dir
-          - /var/lib/notus/advisories
-          - -m
-          - "666"
-        resources: {}
-        securityContext:
-          capabilities:
-            add:
-              - NET_ADMIN
-              - NET_RAW
-        volumeMounts:
-          - mountPath: /etc/openvas/gnupg
-            name: gpg-data-vol
-          - mountPath: /var/lib/openvas/plugins
-            name: vt-data-vol
-          - mountPath: /var/lib/notus
-            name: notus-data-vol
-          - mountPath: /run/ospd
-            name: ospd-openvas-socket-vol
-          - mountPath: /run/redis
-            name: redis-socket-vol
+        - image: greenbone/redis-server
+          name: redis-server
+          resources: {}
+          volumeMounts:
+            - mountPath: /run/redis
+              name: redis-socket-vol
+        - image: greenbone/ospd-openvas:stable
+          name: ospd-openvas
+          args:
+            - ospd-openvas
+            - -f
+            - --config
+            - /etc/gvm/ospd-openvas.conf
+            - --mqtt-broker-address
+            - $(MQTT_BROKER_SERVICE_HOST)
+            - --notus-feed-dir
+            - /var/lib/notus/advisories
+            - -m
+            - "666"
+          resources: {}
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+                - NET_RAW
+          volumeMounts:
+            - mountPath: /etc/openvas/gnupg
+              name: gpg-data-vol
+            - mountPath: /var/lib/openvas/plugins
+              name: vt-data-vol
+            - mountPath: /var/lib/notus
+              name: notus-data-vol
+            - mountPath: /run/ospd
+              name: ospd-openvas-socket-vol
+            - mountPath: /run/redis
+              name: redis-socket-vol
 
       volumes:
         - name: gpg-data-vol
