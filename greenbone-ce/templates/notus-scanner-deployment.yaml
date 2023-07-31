@@ -22,7 +22,7 @@ spec:
           resources: {}
           volumeMounts:
             - mountPath: /mnt
-              name: notus-data-
+              name: notus-data-vol
       containers:
         - env:
             - name: NOTUS_SCANNER_MQTT_BROKER_ADDRESS
