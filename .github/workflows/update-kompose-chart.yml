@@ -1,0 +1,70 @@
+name: Update kompose-generated chart
+
+on:
+  workflow_dispatch:
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      # Maintainer shown in the chart; override with a repository variable
+      # named MAINTAINER_EMAIL if needed.
+      MAINTAINER_EMAIL: "${{ vars.MAINTAINER_EMAIL || 'ludger.pottmeier@gmail.com' }}"
+      MAINTAINER_NAME: "${{ vars.MAINTAINER_NAME || 'Ludger Pottmeier' }}"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download upstream compose file
+        run: |
+          curl -fsSL -o compose.yaml \
+            "https://raw.githubusercontent.com/greenbone/docs/main/src/_static/compose.yaml"
+          echo "Downloaded $(wc -l < compose.yaml) lines"
+
+      - name: Download kompose
+        run: |
+          curl -fsSL -o kompose \
+            "https://github.com/kubernetes/kompose/releases/download/v1.38.0/kompose-linux-amd64"
+          chmod +x kompose
+          ./kompose version
+
+      - name: Convert to Helm chart
+        run: |
+          rm -rf kompose-generated
+          ./kompose convert -f compose.yaml --chart -o kompose-generated
+
+      - name: Add Artifact Hub metadata
+        run: |
+          cp chart-metadata/Chart.yaml kompose-generated/Chart.yaml
+          cp chart-metadata/README.md kompose-generated/README.md
+          cp LICENSE kompose-generated/LICENSE
+          if [ -n "$MAINTAINER_EMAIL" ]; then
+            sed "s/__MAINTAINERS__/maintainers:\n  - name: $MAINTAINER_NAME\n    email: $MAINTAINER_EMAIL/" \
+              kompose-generated/Chart.yaml > /tmp/Chart.yaml && mv /tmp/Chart.yaml kompose-generated/Chart.yaml
+          else
+            sed '/__MAINTAINERS__/d' kompose-generated/Chart.yaml > /tmp/Chart.yaml && mv /tmp/Chart.yaml kompose-generated/Chart.yaml
+          fi
+
+      - name: Validate generated chart
+        run: |
+          if ! command -v helm >/dev/null; then
+            curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          fi
+          helm lint kompose-generated
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add kompose-generated compose.yaml artifacthub-repo.yml chart-metadata
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Update kompose-generated chart from upstream Greenbone compose"
+          git pull --rebase --autostash origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"

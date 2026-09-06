@@ -1,0 +1,84 @@
+name: Publish Helm chart to GHCR
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: >
+          Chart version to publish (Git tag). Defaults to the latest git tag
+          when empty.
+        required: false
+      registry:
+        description: OCI registry host (leave as ghcr.io for GitHub Container Registry).
+        required: false
+        default: ghcr.io
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      REGISTRY: "${{ inputs.registry || 'ghcr.io' }}"
+      OWNER: "${{ github.repository_owner }}"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve chart version
+        id: version
+        run: |
+          if [ -n "${{ github.event.release.tag_name }}" ]; then
+            TAG="${{ github.event.release.tag_name }}"
+          elif [ -n "${{ github.event.inputs.tag }}" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="$(git describe --tags --abbrev=0 2>/dev/null || true)"
+          fi
+          # Extract a strict semver from the tag (e.g. v1.2.3, 1.2.3,
+          # greenbone-ce-1.2.3) so helm accepts it; fall back to 0.0.1.
+          VERSION="$(printf '%s' "$TAG" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+([-][0-9A-Za-z.-]+)?' | head -1)"
+          echo "version=${VERSION:-0.0.1}" >> "$GITHUB_OUTPUT"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.17.2
+
+      - name: Install oras
+        run: |
+          ORAS_VERSION=1.2.2
+          curl -fsSL -o /tmp/oras.tar.gz \
+            "https://github.com/oras-project/oras/releases/download/v${ORAS_VERSION}/oras_${ORAS_VERSION}_linux_amd64.tar.gz"
+          tar -xzf /tmp/oras.tar.gz -C /tmp
+          sudo install -m 0755 /tmp/oras /usr/local/bin/oras
+          oras version
+
+      - name: Login to registry (Helm)
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login "$REGISTRY" \
+            -u "$OWNER" --password-stdin
+
+      - name: Package chart
+        run: |
+          helm package kompose-generated --version "${{ steps.version.outputs.version }}" \
+            --destination dist
+
+      - name: Push chart to GHCR
+        run: |
+          helm push "dist/greenbone-ce-${{ steps.version.outputs.version }}.tgz" \
+            "oci://${REGISTRY}/${OWNER}"
+
+      - name: Push Artifact Hub repo metadata (oras)
+        if: hashFiles('artifacthub-repo.yml') != ''
+        run: |
+          printf '%s' "${{ secrets.GITHUB_TOKEN }}" | oras login "$REGISTRY" -u "$OWNER" --password-stdin
+          oras push \
+            "${REGISTRY}/${OWNER}/greenbone-ce:artifacthub.io" \
+            --config /dev/null:application/vnd.cncf.artifacthub.config.v1+yaml \
+            artifacthub-repo.yml:application/vnd.cncf.artifacthub.repository-metadata.layer.v1.yaml

@@ -1,0 +1,12 @@
+# Artifact Hub repository metadata.
+# https://artifacthub.io/docs/topics/repositories/
+#
+# To claim ownership and become a verified publisher, set `repositoryID` to the
+# ID shown on your repository card in the Artifact Hub control panel. For OCI
+# (GHCR) repositories Artifact Hub pulls this file from the `artifacthub.io` tag
+# pushed by oras (see publish workflow).
+repositoryID:
+
+owners:
+  - name: Ludger Pottmeier
+    email: ludger.pottmeier@gmail.com
