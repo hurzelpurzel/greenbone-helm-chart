@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: ./kompose convert -f compose.yaml --chart -o kompose-generated
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: gvm-tools
+  name: gvm-tools
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: gvm-tools
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: ./kompose convert -f compose.yaml --chart -o kompose-generated
+        kompose.version: 1.38.0 (a8f5d1cbd)
+      labels:
+        io.kompose.service: gvm-tools
+    spec:
+      containers:
+        - image: registry.community.greenbone.net/community/gvm-tools
+          name: gvm-tools
+          volumeMounts:
+            - mountPath: /run/gvmd
+              name: gvmd-socket-vol
+            - mountPath: /run/ospd
+              name: ospd-openvas-socket-vol
+      restartPolicy: Always
+      volumes:
+        - name: gvmd-socket-vol
+          persistentVolumeClaim:
+            claimName: gvmd-socket-vol
+        - name: ospd-openvas-socket-vol
+          persistentVolumeClaim:
+            claimName: ospd-openvas-socket-vol

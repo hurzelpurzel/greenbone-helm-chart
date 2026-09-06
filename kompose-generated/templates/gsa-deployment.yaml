@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: ./kompose convert -f compose.yaml --chart -o kompose-generated
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: gsa
+  name: gsa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: gsa
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: ./kompose convert -f compose.yaml --chart -o kompose-generated
+        kompose.version: 1.38.0 (a8f5d1cbd)
+      labels:
+        io.kompose.service: gsa
+    spec:
+      containers:
+        - env:
+            - name: KEEP_ALIVE
+              value: "1"
+            - name: MOUNT_PATH
+              value: /mnt/web
+          image: registry.community.greenbone.net/community/gsa:stable-slim
+          livenessProbe:
+            exec:
+              command:
+                - test -e /run/gsa/copying.done
+            initialDelaySeconds: 5
+          name: gsa
+          volumeMounts:
+            - mountPath: /mnt/web
+              name: gsa-data-vol
+      restartPolicy: Always
+      volumes:
+        - name: gsa-data-vol
+          persistentVolumeClaim:
+            claimName: gsa-data-vol

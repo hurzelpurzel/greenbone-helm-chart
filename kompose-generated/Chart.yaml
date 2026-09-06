@@ -1,0 +1,36 @@
+apiVersion: v2
+name: greenbone-ce
+description: |
+  Helm chart for the OpenVAS / Greenbone Community Edition 22.4 vulnerability
+  management stack on Kubernetes, generated from the upstream Greenbone
+  docker-compose file via kompose.
+type: application
+# Base version; overridden at publish time by the GitHub release tag (see
+# publish-chart.yml).
+version: 0.0.1
+appVersion: "22.4"
+home: https://www.greenbone.net/
+keywords:
+  - greenbone
+  - openvas
+  - vulnerability-management
+  - scanner
+  - security
+sources:
+  - https://github.com/greenbone/docs
+maintainers:
+  - name: Ludger Pottmeier
+    email: ludger.pottmeier@gmail.com
+annotations:
+  artifacthub.io/changes: |
+    - kind: changed
+      description: Regenerated Helm chart from the upstream Greenbone Community Edition docker-compose file
+  artifacthub.io/images: |
+    - name: gsa
+      image: registry.community.greenbone.net/community/gsa:stable-slim
+    - name: gvmd
+      image: registry.community.greenbone.net/community/gvmd:stable
+    - name: ospd-openvas
+      image: registry.community.greenbone.net/community/ospd-openvas:stable
+    - name: notus-scanner
+      image: registry.community.greenbone.net/community/notus-scanner:stable

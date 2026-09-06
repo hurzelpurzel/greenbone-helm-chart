@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: ./kompose convert -f compose.yaml --chart -o kompose-generated
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: report-formats
+  name: report-formats
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: report-formats
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: ./kompose convert -f compose.yaml --chart -o kompose-generated
+        kompose.version: 1.38.0 (a8f5d1cbd)
+      labels:
+        io.kompose.service: report-formats
+    spec:
+      containers:
+        - env:
+            - name: FEED_RELEASE
+              value: "24.10"
+            - name: KEEP_ALIVE
+              value: "1"
+          image: registry.community.greenbone.net/community/report-formats
+          name: report-formats
+          volumeMounts:
+            - mountPath: /mnt
+              name: data-objects-vol
+      restartPolicy: Always
+      volumes:
+        - name: data-objects-vol
+          persistentVolumeClaim:
+            claimName: data-objects-vol

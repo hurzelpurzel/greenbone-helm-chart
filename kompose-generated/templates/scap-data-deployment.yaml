@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: ./kompose convert -f compose.yaml --chart -o kompose-generated
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: scap-data
+  name: scap-data
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: scap-data
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: ./kompose convert -f compose.yaml --chart -o kompose-generated
+        kompose.version: 1.38.0 (a8f5d1cbd)
+      labels:
+        io.kompose.service: scap-data
+    spec:
+      containers:
+        - env:
+            - name: KEEP_ALIVE
+              value: "1"
+          image: registry.community.greenbone.net/community/scap-data
+          name: scap-data
+          volumeMounts:
+            - mountPath: /mnt
+              name: scap-data-vol
+      restartPolicy: Always
+      volumes:
+        - name: scap-data-vol
+          persistentVolumeClaim:
+            claimName: scap-data-vol

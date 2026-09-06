@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: ./kompose convert -f compose.yaml --chart -o kompose-generated
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: ospd-openvas
+  name: ospd-openvas
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: ospd-openvas
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: ./kompose convert -f compose.yaml --chart -o kompose-generated
+        kompose.version: 1.38.0 (a8f5d1cbd)
+      labels:
+        io.kompose.service: ospd-openvas
+    spec:
+      containers:
+        - args:
+            - ospd-openvas
+            - -f
+            - --config
+            - /etc/gvm/ospd-openvas.conf
+            - --notus-feed-dir
+            - /var/lib/notus/advisories
+            - -m
+            - "666"
+          image: registry.community.greenbone.net/community/ospd-openvas:stable
+          name: ospd-openvas
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+                - NET_RAW
+          volumeMounts:
+            - mountPath: /etc/openvas/gnupg
+              name: gpg-data-vol
+            - mountPath: /var/lib/openvas/plugins
+              name: vt-data-vol
+            - mountPath: /var/lib/notus
+              name: notus-data-vol
+            - mountPath: /run/ospd
+              name: ospd-openvas-socket-vol
+            - mountPath: /run/redis
+              name: redis-socket-vol
+            - mountPath: /etc/openvas
+              name: openvas-data-vol
+            - mountPath: /var/log/openvas
+              name: openvas-log-data-vol
+      hostname: ospd-openvas.local
+      restartPolicy: Always
+      volumes:
+        - name: gpg-data-vol
+          persistentVolumeClaim:
+            claimName: gpg-data-vol
+        - name: vt-data-vol
+          persistentVolumeClaim:
+            claimName: vt-data-vol
+        - name: notus-data-vol
+          persistentVolumeClaim:
+            claimName: notus-data-vol
+        - name: ospd-openvas-socket-vol
+          persistentVolumeClaim:
+            claimName: ospd-openvas-socket-vol
+        - name: redis-socket-vol
+          persistentVolumeClaim:
+            claimName: redis-socket-vol
+        - name: openvas-data-vol
+          persistentVolumeClaim:
+            claimName: openvas-data-vol
+        - name: openvas-log-data-vol
+          persistentVolumeClaim:
+            claimName: openvas-log-data-vol

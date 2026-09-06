@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: ./kompose convert -f compose.yaml --chart -o kompose-generated
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: gvm-config
+  name: gvm-config
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: gvm-config
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: ./kompose convert -f compose.yaml --chart -o kompose-generated
+        kompose.version: 1.38.0 (a8f5d1cbd)
+      labels:
+        io.kompose.service: gvm-config
+    spec:
+      containers:
+        - env:
+            - name: ENABLE_NGINX_CONFIG
+              value: "true"
+            - name: ENABLE_TLS_GENERATION
+              value: "true"
+          image: registry.community.greenbone.net/community/gvm-config:latest
+          name: gvm-config
+          volumeMounts:
+            - mountPath: /mnt/nginx/configs
+              name: nginx-config-vol
+            - mountPath: /mnt/nginx/certs
+              name: nginx-certificates-vol
+      restartPolicy: Always
+      volumes:
+        - name: nginx-config-vol
+          persistentVolumeClaim:
+            claimName: nginx-config-vol
+        - name: nginx-certificates-vol
+          persistentVolumeClaim:
+            claimName: nginx-certificates-vol

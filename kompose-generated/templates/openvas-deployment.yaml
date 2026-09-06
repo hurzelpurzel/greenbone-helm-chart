@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: ./kompose convert -f compose.yaml --chart -o kompose-generated
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: openvas
+  name: openvas
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: openvas
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: ./kompose convert -f compose.yaml --chart -o kompose-generated
+        kompose.version: 1.38.0 (a8f5d1cbd)
+      labels:
+        io.kompose.service: openvas
+    spec:
+      containers:
+        - args:
+            - /bin/sh
+            - -c
+            - |
+              cat /etc/openvas/openvas.conf
+              tail -f /var/log/openvas/openvas.log
+          image: registry.community.greenbone.net/community/openvas-scanner:stable
+          name: openvas
+          volumeMounts:
+            - mountPath: /etc/openvas
+              name: openvas-data-vol
+            - mountPath: /var/log/openvas
+              name: openvas-log-data-vol
+      restartPolicy: Always
+      volumes:
+        - name: openvas-data-vol
+          persistentVolumeClaim:
+            claimName: openvas-data-vol
+        - name: openvas-log-data-vol
+          persistentVolumeClaim:
+            claimName: openvas-log-data-vol

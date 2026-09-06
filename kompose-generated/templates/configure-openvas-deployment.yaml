@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: ./kompose convert -f compose.yaml --chart -o kompose-generated
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: configure-openvas
+  name: configure-openvas
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: configure-openvas
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: ./kompose convert -f compose.yaml --chart -o kompose-generated
+        kompose.version: 1.38.0 (a8f5d1cbd)
+      labels:
+        io.kompose.service: configure-openvas
+    spec:
+      containers:
+        - args:
+            - /bin/sh
+            - -c
+            - |
+              printf "table_driven_lsc = yes\nopenvasd_server = http://openvasd:80\n" > /mnt/openvas.conf
+              sed "s/127/128/" /etc/openvas/openvas_log.conf | sed 's/gvm/openvas/' > /mnt/openvas_log.conf
+              chmod 644 /mnt/openvas.conf
+              chmod 644 /mnt/openvas_log.conf
+              touch /var/log/openvas/openvas.log
+              chmod 666 /var/log/openvas/openvas.log
+          image: registry.community.greenbone.net/community/openvas-scanner:stable
+          name: configure-openvas
+          volumeMounts:
+            - mountPath: /mnt
+              name: openvas-data-vol
+            - mountPath: /var/log/openvas
+              name: openvas-log-data-vol
+      restartPolicy: Always
+      volumes:
+        - name: openvas-data-vol
+          persistentVolumeClaim:
+            claimName: openvas-data-vol
+        - name: openvas-log-data-vol
+          persistentVolumeClaim:
+            claimName: openvas-log-data-vol

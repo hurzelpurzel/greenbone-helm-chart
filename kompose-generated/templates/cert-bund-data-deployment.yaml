@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: ./kompose convert -f compose.yaml --chart -o kompose-generated
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: cert-bund-data
+  name: cert-bund-data
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: cert-bund-data
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: ./kompose convert -f compose.yaml --chart -o kompose-generated
+        kompose.version: 1.38.0 (a8f5d1cbd)
+      labels:
+        io.kompose.service: cert-bund-data
+    spec:
+      containers:
+        - env:
+            - name: KEEP_ALIVE
+              value: "1"
+          image: registry.community.greenbone.net/community/cert-bund-data
+          name: cert-bund-data
+          volumeMounts:
+            - mountPath: /mnt
+              name: cert-data-vol
+      restartPolicy: Always
+      volumes:
+        - name: cert-data-vol
+          persistentVolumeClaim:
+            claimName: cert-data-vol

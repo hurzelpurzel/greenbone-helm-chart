@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: ./kompose convert -f compose.yaml --chart -o kompose-generated
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: nginx
+  name: nginx
+spec:
+  ports:
+    - name: "443"
+      port: 443
+      targetPort: 443
+    - name: "9392"
+      port: 9392
+      targetPort: 9392
+  selector:
+    io.kompose.service: nginx

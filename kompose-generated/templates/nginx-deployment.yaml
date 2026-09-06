@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: ./kompose convert -f compose.yaml --chart -o kompose-generated
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: nginx
+  name: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: nginx
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: ./kompose convert -f compose.yaml --chart -o kompose-generated
+        kompose.version: 1.38.0 (a8f5d1cbd)
+      labels:
+        io.kompose.service: nginx
+    spec:
+      containers:
+        - image: registry.community.greenbone.net/community/nginx:latest
+          name: nginx
+          ports:
+            - containerPort: 443
+              protocol: TCP
+            - containerPort: 9392
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /etc/nginx/conf.d
+              name: nginx-config-vol
+              readOnly: true
+            - mountPath: /etc/nginx/certs
+              name: nginx-certificates-vol
+              readOnly: true
+            - mountPath: /usr/share/nginx/html
+              name: gsa-data-vol
+              readOnly: true
+      restartPolicy: Always
+      volumes:
+        - name: nginx-config-vol
+          persistentVolumeClaim:
+            claimName: nginx-config-vol
+            readOnly: true
+        - name: nginx-certificates-vol
+          persistentVolumeClaim:
+            claimName: nginx-certificates-vol
+            readOnly: true
+        - name: gsa-data-vol
+          persistentVolumeClaim:
+            claimName: gsa-data-vol
+            readOnly: true
