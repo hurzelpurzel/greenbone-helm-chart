@@ -26,7 +26,7 @@ jobs:
       OWNER: "${{ github.repository_owner }}"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
 
@@ -46,7 +46,7 @@ jobs:
           echo "version=${VERSION:-0.0.1}" >> "$GITHUB_OUTPUT"
 
       - name: Install Helm
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@v5.0.1
         with:
           version: v3.17.2
 
