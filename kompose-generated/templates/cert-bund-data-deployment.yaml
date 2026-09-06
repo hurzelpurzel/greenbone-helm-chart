@@ -22,6 +22,10 @@ spec:
       labels:
         io.kompose.service: cert-bund-data
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - env:
             - name: KEEP_ALIVE

@@ -1,0 +1,19 @@
+# -- Existing images are pulled from registry.community.greenbone.net which
+# requires authentication.  Create a Kubernetes docker-registry secret and
+# reference its name here so that every pod can pull images from the private
+# registry.
+#
+# Example:
+#   kubectl create secret docker-registry greenbone-registry \
+#     --docker-server=registry.community.greenbone.net \
+#     --docker-username=<your-username> \
+#     --docker-password=<your-password> \
+#     --docker-email=<your-email>
+#
+# helm install greenbone-ce . --set imagePullSecrets[0].name=greenbone-registry
+
+# -- Array of image-pull secrets applied to every Deployment pod spec.
+# Each entry must be a map with a `name` key whose value matches an existing
+# kubernetes.io/dockerconfigjson secret.
+imagePullSecrets: []
+  # - name: greenbone-registry

@@ -49,6 +49,10 @@ jobs:
             sed '/__MAINTAINERS__/d' kompose-generated/Chart.yaml > /tmp/Chart.yaml && mv /tmp/Chart.yaml kompose-generated/Chart.yaml
           fi
 
+      - name: Apply postprocessing to generated chart
+        run: |
+          bash scripts/postprocess-kompose-chart.sh --chart-dir kompose-generated
+
       - name: Validate generated chart
         run: |
           if ! command -v helm >/dev/null; then
@@ -60,7 +64,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add kompose-generated compose.yaml artifacthub-repo.yml chart-metadata
+          git add kompose-generated compose.yaml artifacthub-repo.yml chart-metadata scripts
           if git diff --cached --quiet; then
             echo "No changes to commit"
             exit 0

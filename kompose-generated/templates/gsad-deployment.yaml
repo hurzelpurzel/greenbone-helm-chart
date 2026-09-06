@@ -22,6 +22,10 @@ spec:
       labels:
         io.kompose.service: gsad
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - env:
             - name: GSAD_API_ONLY

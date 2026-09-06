@@ -22,6 +22,10 @@ spec:
       labels:
         io.kompose.service: gpg-data
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - image: registry.community.greenbone.net/community/gpg-data
           name: gpg-data
